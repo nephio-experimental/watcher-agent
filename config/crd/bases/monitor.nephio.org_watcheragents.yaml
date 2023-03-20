@@ -1,0 +1,138 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.9.2
+  creationTimestamp: null
+  name: watcheragents.monitor.nephio.org
+spec:
+  group: monitor.nephio.org
+  names:
+    kind: WatcherAgent
+    listKind: WatcherAgentList
+    plural: watcheragents
+    singular: watcheragent
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: WatcherAgent is the Schema for the watcheragents API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: WatcherAgentSpec defines the desired state of WatcherAgent
+            properties:
+              edgeWatcher:
+                description: EdgeWatcher contains address and port of the edgewatcher
+                  GRPC server
+                properties:
+                  addr:
+                    type: string
+                  port:
+                    type: string
+                type: object
+              resyncTimestamp:
+                description: ResyncTimestamp is the time at which last resync was
+                  requested by edgewatcher
+                format: date-time
+                type: string
+              watchRequests:
+                items:
+                  description: WatchRequest uniquely identifies a list of resources
+                    to watch
+                  properties:
+                    group:
+                      enum:
+                      - nfdeploy.nephio.org
+                      type: string
+                    kind:
+                      enum:
+                      - UpfDeploy
+                      - SmfDeploy
+                      - AusfDeploy
+                      type: string
+                    namespace:
+                      description: Namespace to restrict the watch, defaults to empty
+                        string which corresponds to the "default" namespace
+                      type: string
+                    version:
+                      enum:
+                      - v1alpha1
+                      type: string
+                  required:
+                  - group
+                  - kind
+                  - namespace
+                  - version
+                  type: object
+                type: array
+            required:
+            - watchRequests
+            type: object
+          status:
+            description: WatcherAgentStatus defines the observed state of WatcherAgent
+            properties:
+              resyncTimestamp:
+                description: ResyncTimestamp is the timestamp of last successful resync
+                  request from edgewatcher
+                format: date-time
+                type: string
+              watchRequests:
+                items:
+                  description: WatchRequestStatus specifies the last ResourceVersion
+                    sent to edgewatcher
+                  properties:
+                    resourceVersion:
+                      type: string
+                    watchRequest:
+                      description: WatchRequest uniquely identifies a list of resources
+                        to watch
+                      properties:
+                        group:
+                          enum:
+                          - nfdeploy.nephio.org
+                          type: string
+                        kind:
+                          enum:
+                          - UpfDeploy
+                          - SmfDeploy
+                          - AusfDeploy
+                          type: string
+                        namespace:
+                          description: Namespace to restrict the watch, defaults to
+                            empty string which corresponds to the "default" namespace
+                          type: string
+                        version:
+                          enum:
+                          - v1alpha1
+                          type: string
+                      required:
+                      - group
+                      - kind
+                      - namespace
+                      - version
+                      type: object
+                  required:
+                  - resourceVersion
+                  - watchRequest
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

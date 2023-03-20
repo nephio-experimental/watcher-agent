@@ -1,0 +1,450 @@
+# Copyright 2022-2023 The Nephio Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: nephio-system
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.9.2
+  creationTimestamp: null
+  name: watcheragents.monitor.nephio.org
+spec:
+  group: monitor.nephio.org
+  names:
+    kind: WatcherAgent
+    listKind: WatcherAgentList
+    plural: watcheragents
+    singular: watcheragent
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: WatcherAgent is the Schema for the watcheragents API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: WatcherAgentSpec defines the desired state of WatcherAgent
+            properties:
+              edgeWatcher:
+                description: EdgeWatcher contains address and port of the edgewatcher GRPC server
+                properties:
+                  addr:
+                    type: string
+                  port:
+                    type: string
+                type: object
+              resyncTimestamp:
+                description: ResyncTimestamp is the time at which last resync was requested by edgewatcher
+                format: date-time
+                type: string
+              watchRequests:
+                items:
+                  description: WatchRequest uniquely identifies a list of resources to watch
+                  properties:
+                    group:
+                      enum:
+                      - nfdeploy.nephio.org
+                      type: string
+                    kind:
+                      enum:
+                      - UpfDeploy
+                      - SmfDeploy
+                      - AusfDeploy
+                      type: string
+                    namespace:
+                      description: Namespace to restrict the watch, defaults to empty string which corresponds to the "default" namespace
+                      type: string
+                    version:
+                      enum:
+                      - v1alpha1
+                      type: string
+                  required:
+                  - group
+                  - kind
+                  - namespace
+                  - version
+                  type: object
+                type: array
+            required:
+            - watchRequests
+            type: object
+          status:
+            description: WatcherAgentStatus defines the observed state of WatcherAgent
+            properties:
+              resyncTimestamp:
+                description: ResyncTimestamp is the timestamp of last successful resync request from edgewatcher
+                format: date-time
+                type: string
+              watchRequests:
+                items:
+                  description: WatchRequestStatus specifies the last ResourceVersion sent to edgewatcher
+                  properties:
+                    resourceVersion:
+                      type: string
+                    watchRequest:
+                      description: WatchRequest uniquely identifies a list of resources to watch
+                      properties:
+                        group:
+                          enum:
+                          - nfdeploy.nephio.org
+                          type: string
+                        kind:
+                          enum:
+                          - UpfDeploy
+                          - SmfDeploy
+                          - AusfDeploy
+                          type: string
+                        namespace:
+                          description: Namespace to restrict the watch, defaults to empty string which corresponds to the "default" namespace
+                          type: string
+                        version:
+                          enum:
+                          - v1alpha1
+                          type: string
+                      required:
+                      - group
+                      - kind
+                      - namespace
+                      - version
+                      type: object
+                  required:
+                  - resourceVersion
+                  - watchRequest
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+---
+apiVersion: v1
+imagePullSecrets:
+- name: image-secret-ar
+kind: ServiceAccount
+metadata:
+  name: watcheragent-controller-manager
+  namespace: nephio-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: watcheragent-leader-election-role
+  namespace: nephio-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  name: watcheragent-manager-role
+  namespace: nephio-system
+rules:
+- apiGroups:
+  - nfdeploy.nephio.org
+  resources:
+  - ausfdeploys
+  - smfdeploys
+  - upfdeploys
+  verbs:
+  - get
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: watcheragent-manager-role
+rules:
+- apiGroups:
+  - monitor.nephio.org
+  resources:
+  - watcheragents
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - monitor.nephio.org
+  resources:
+  - watcheragents/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - monitor.nephio.org
+  resources:
+  - watcheragents/status
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: watcheragent-metrics-reader
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: watcheragent-proxy-role
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: watcheragent-leader-election-rolebinding
+  namespace: nephio-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: watcheragent-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: watcheragent-controller-manager
+  namespace: nephio-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: watcheragent-manager-rolebinding
+  namespace: nephio-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: watcheragent-manager-role
+subjects:
+- kind: ServiceAccount
+  name: watcheragent-controller-manager
+  namespace: nephio-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: watcheragent-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: watcheragent-manager-role
+subjects:
+- kind: ServiceAccount
+  name: watcheragent-controller-manager
+  namespace: nephio-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: watcheragent-proxy-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: watcheragent-proxy-role
+subjects:
+- kind: ServiceAccount
+  name: watcheragent-controller-manager
+  namespace: nephio-system
+---
+apiVersion: v1
+data:
+  controller_manager_config.yaml: |
+    apiVersion: controller-runtime.sigs.k8s.io/v1alpha1
+    kind: ControllerManagerConfig
+    health:
+      healthProbeBindAddress: :8081
+    metrics:
+      bindAddress: 127.0.0.1:8080
+    webhook:
+      port: 9443
+    leaderElection:
+      leaderElect: true
+      resourceName: leader.nephio.org
+    # leaderElectionReleaseOnCancel defines if the leader should step down volume
+    # when the Manager ends. This requires the binary to immediately end when the
+    # Manager is stopped, otherwise, this setting is unsafe. Setting this significantly
+    # speeds up voluntary leader transitions as the new leader don't have to wait
+    # LeaseDuration time first.
+    # In the default scaffold provided, the program ends immediately after
+    # the manager stops, so would be fine to enable this option. However,
+    # if you are doing or is intended to do any operation such as perform cleanups
+    # after the manager stops then its usage might be unsafe.
+    # leaderElectionReleaseOnCancel: true
+kind: ConfigMap
+metadata:
+  name: watcheragent-manager-config
+  namespace: nephio-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: watcheragent-controller-manager-metrics-service
+  namespace: nephio-system
+spec:
+  ports:
+  - name: https
+    port: 8443
+    protocol: TCP
+    targetPort: https
+  selector:
+    control-plane: controller-manager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: controller-manager
+  name: watcheragent-controller-manager
+  namespace: nephio-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: controller-manager
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels:
+        control-plane: controller-manager
+    spec:
+      containers:
+      - args:
+        - --secure-listen-address=0.0.0.0:8443
+        - --upstream=http://127.0.0.1:8080/
+        - --logtostderr=true
+        - --v=0
+        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.13.0
+        name: kube-rbac-proxy
+        ports:
+        - containerPort: 8443
+          name: https
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 5m
+            memory: 64Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      - args:
+        - --health-probe-bind-address=:8081
+        - --metrics-bind-address=127.0.0.1:8080
+        - --leader-elect
+        command:
+        - /manager
+        image: docker.io/nephio/watcheragent:0.0.11
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        name: manager
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 64Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+      securityContext:
+        runAsNonRoot: true
+      serviceAccountName: watcheragent-controller-manager
+      terminationGracePeriodSeconds: 10

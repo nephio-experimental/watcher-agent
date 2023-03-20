@@ -1,0 +1,51 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - monitor.nephio.org
+  resources:
+  - watcheragents
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - monitor.nephio.org
+  resources:
+  - watcheragents/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - monitor.nephio.org
+  resources:
+  - watcheragents/status
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  name: manager-role
+  namespace: nephio-system
+rules:
+- apiGroups:
+  - nfdeploy.nephio.org
+  resources:
+  - ausfdeploys
+  - smfdeploys
+  - upfdeploys
+  verbs:
+  - get
+  - list
+  - watch
