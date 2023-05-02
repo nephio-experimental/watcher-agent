@@ -23,8 +23,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	free5gctypes "github.com/nephio-project/common-lib/ausf"
-	nfdeployv1alpha1 "github.com/nephio-project/common-lib/nfdeploy"
+	nfdeployv1alpha1 "github.com/nephio-project/api/nf_deployments/v1alpha1"
 	edgewatcher "github.com/nephio-project/edge-watcher"
 	"github.com/nephio-project/edge-watcher/preprocessor"
 	"github.com/nephio-project/watcher-agent/api/v1alpha1"
@@ -100,11 +99,11 @@ var _ = Describe("Controller", func() {
 					defer close(done)
 
 					var wg sync.WaitGroup
-					wg.Add(2 * nfCount)
+					wg.Add(nfCount)
 
 					for upfID, upfList := range cases.upfs {
 						Expect(cases.upfAckStreams).To(HaveKey(upfID))
-						go func(stream chan string, id types.NamespacedName, list []*nfdeployv1alpha1.UpfDeploy) {
+						go func(stream chan string, id types.NamespacedName, list []*nfdeployv1alpha1.UPFDeployment) {
 							defer GinkgoRecover()
 							defer wg.Done()
 							for _, obj := range list {
@@ -113,9 +112,9 @@ var _ = Describe("Controller", func() {
 
 								u := &unstructured.Unstructured{Object: data}
 								u.SetGroupVersionKind(schema.GroupVersionKind{
-									Group:   "nfdeploy.nephio.org",
+									Group:   "workload.nephio.org",
 									Version: "v1alpha1",
-									Kind:    "UpfDeploy",
+									Kind:    "UPFDeployment",
 								})
 								rv, err := clusterClient.Apply(ctx, logger, clusterName, u, nil)
 								Expect(err).To(BeNil(), fmt.Sprintf("error in applying the object: %v, clusterName: %v", obj.GetName(), clusterName))
@@ -124,30 +123,10 @@ var _ = Describe("Controller", func() {
 						}(cases.upfAckStreams[upfID], upfID, upfList)
 					}
 
-					for ausfID, ausfList := range cases.ausfs {
-						go func(stream chan string, id types.NamespacedName, list []*free5gctypes.AusfDeploy) {
-							defer GinkgoRecover()
-							defer wg.Done()
-							for _, obj := range list {
-								data, err := runtime.DefaultUnstructuredConverter.ToUnstructured(obj)
-								Expect(err).To(BeNil())
-
-								u := &unstructured.Unstructured{Object: data}
-								u.SetGroupVersionKind(schema.GroupVersionKind{
-									Group:   "nfdeploy.nephio.org",
-									Version: "v1alpha1",
-									Kind:    "AusfDeploy",
-								})
-								rv, err := clusterClient.Apply(ctx, logger, clusterName, u, nil)
-								Expect(err).To(BeNil(), fmt.Sprintf("error in applying the object: %v, clusterName: %v", obj.GetName(), clusterName))
-								Eventually(stream).Should(Receive(Equal(rv)), fmt.Sprintf("error in receiving resourceVersion on ausfAckStream id: %v", id.Name))
-							}
-						}(cases.ausfAckStreams[ausfID], ausfID, ausfList)
-					}
 					wg.Wait()
 				}()
 
-				upfItr, ausfItr := make(map[types.NamespacedName]int), make(map[types.NamespacedName]int)
+				upfItr := make(map[types.NamespacedName]int)
 			loop:
 				for {
 					logger.Info("waiting for events")
@@ -163,8 +142,8 @@ var _ = Describe("Controller", func() {
 							continue loop
 						}
 						switch event.Key.Kind {
-						case "UPFDeploy":
-							var upfDeploy nfdeployv1alpha1.UpfDeploy
+						case "UPFDeployment":
+							var upfDeploy nfdeployv1alpha1.UPFDeployment
 							err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.Object, &upfDeploy)
 							Expect(err).To(BeNil(), "error in converting to upfdeploy")
 							id := types.NamespacedName{
@@ -172,29 +151,12 @@ var _ = Describe("Controller", func() {
 							}
 							Expect(cases.upfs).To(HaveKey(id))
 							expectedUpfDeploy := cases.upfs[id][upfItr[id]]
-							Expect(expectedUpfDeploy.Spec.N3Interfaces).To(Equal(upfDeploy.Spec.N3Interfaces))
+							Expect(expectedUpfDeploy.Spec.Interfaces).To(Equal(upfDeploy.Spec.Interfaces))
 							upfItr[id]++
 
 							select {
 							case <-ctx.Done():
 							case cases.upfAckStreams[id] <- upfDeploy.ResourceVersion:
-							}
-
-						case "AUSFDeploy":
-							var ausfDeploy free5gctypes.AusfDeploy
-							err := runtime.DefaultUnstructuredConverter.FromUnstructured(obj.Object, &ausfDeploy)
-							Expect(err).To(BeNil(), "error in converting to ausfdeploy")
-							id := types.NamespacedName{
-								Name: ausfDeploy.Name,
-							}
-							Expect(cases.ausfs).To(HaveKey(id))
-							expectedAusfDeploy := cases.ausfs[id][ausfItr[id]]
-							Expect(expectedAusfDeploy.Spec.NfInfo.Version).To(Equal(ausfDeploy.Spec.NfInfo.Version))
-							ausfItr[id]++
-
-							select {
-							case <-ctx.Done():
-							case cases.ausfAckStreams[id] <- ausfDeploy.ResourceVersion:
 							}
 						}
 					}

@@ -52,7 +52,7 @@ const watcherAgentFinalzer = "monitor.nephio.org/watcherAgent"
 //+kubebuilder:rbac:groups=monitor.nephio.org,resources=watcheragents,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=monitor.nephio.org,resources=watcheragents/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=monitor.nephio.org,resources=watcheragents/finalizers,verbs=update
-//+kubebuilder:rbac:groups=nfdeploy.nephio.org,namespace=nephio-system,resources=upfdeploys;smfdeploys;ausfdeploys,verbs=get;list;watch
+//+kubebuilder:rbac:groups=workload.nephio.org,namespace=nephio-system,resources=upfdeployments;smfdeployments,verbs=get;list;watch
 
 func (r *Reconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	logger := r.Log.WithValues("request", req)

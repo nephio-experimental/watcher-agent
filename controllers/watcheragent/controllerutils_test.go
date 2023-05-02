@@ -29,8 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/go-logr/logr"
-	free5gctypes "github.com/nephio-project/common-lib/ausf"
-	nfdeployv1alpha1 "github.com/nephio-project/common-lib/nfdeploy"
+	nfdeployv1alpha1 "github.com/nephio-project/api/nf_deployments/v1alpha1"
 	edgewatcher "github.com/nephio-project/edge-watcher"
 	"github.com/nephio-project/edge-watcher/preprocessor"
 	. "github.com/onsi/ginkgo/v2"
@@ -138,72 +137,48 @@ func (e *edgeWatcherHandler) Restart() {
 }
 
 const (
-	upfNameFormat  = "upfdeploy%v"
-	ausfNameFormat = "ausfdeploy%v"
+	upfNameFormat = "upfdeploy%v"
 )
 
 type clusterTestCase struct {
-	upfs           map[types.NamespacedName][]*nfdeployv1alpha1.UpfDeploy
-	ausfs          map[types.NamespacedName][]*free5gctypes.AusfDeploy
-	upfAckStreams  map[types.NamespacedName]chan string
-	ausfAckStreams map[types.NamespacedName]chan string
+	upfs          map[types.NamespacedName][]*nfdeployv1alpha1.UPFDeployment
+	upfAckStreams map[types.NamespacedName]chan string
 }
 
 func generateClusterCase(nfCount, eventCount int) *clusterTestCase {
 	var cases *clusterTestCase
+	var vlan_id uint16 = 100
 	cases = &clusterTestCase{
-		upfs:           make(map[types.NamespacedName][]*nfdeployv1alpha1.UpfDeploy, nfCount),
-		ausfs:          make(map[types.NamespacedName][]*free5gctypes.AusfDeploy, nfCount),
-		upfAckStreams:  make(map[types.NamespacedName]chan string, nfCount),
-		ausfAckStreams: make(map[types.NamespacedName]chan string, nfCount),
+		upfs:          make(map[types.NamespacedName][]*nfdeployv1alpha1.UPFDeployment, nfCount),
+		upfAckStreams: make(map[types.NamespacedName]chan string, nfCount),
 	}
 
 	for j := 0; j < nfCount; j++ {
 		upfName := fmt.Sprintf(upfNameFormat, j)
-		ausfName := fmt.Sprintf(ausfNameFormat, j)
-		upfList := make([]*nfdeployv1alpha1.UpfDeploy, eventCount)
-		ausfList := make([]*free5gctypes.AusfDeploy, eventCount)
+		upfList := make([]*nfdeployv1alpha1.UPFDeployment, eventCount)
 
-		prevUpf := &nfdeployv1alpha1.UpfDeploy{ObjectMeta: metav1.ObjectMeta{
+		prevUpf := &nfdeployv1alpha1.UPFDeployment{ObjectMeta: metav1.ObjectMeta{
 			Name: upfName,
-			Labels: map[string]string{
-				util.NFDeployLabel: "nf1",
-			},
-		}}
-
-		prevAusf := &free5gctypes.AusfDeploy{ObjectMeta: metav1.ObjectMeta{
-			Name: ausfName,
 			Labels: map[string]string{
 				util.NFDeployLabel: "nf1",
 			},
 		}}
 		for k := 0; k < eventCount; k++ {
 			curUpf := prevUpf.DeepCopy()
-			curUpf.Spec.N3Interfaces = append(curUpf.Spec.N3Interfaces, nfdeployv1alpha1.InterfaceConfig{
+			curUpf.Spec.Interfaces = append(curUpf.Spec.Interfaces, nfdeployv1alpha1.InterfaceConfig{
 				Name:   environment.RandomAlphabaticalString(10),
-				IpAddr: []string{"0.0.0.0"},
-				Vlan:   []string{"vlan"},
+				IPv4:   &nfdeployv1alpha1.IPv4{Address: "0.0.0.0"},
+				VLANID: &vlan_id,
 			})
 			upfList[k] = curUpf
 			prevUpf = curUpf
-
-			curAusf := prevAusf.DeepCopy()
-			curAusf.Spec.NfInfo.Version += environment.RandomAlphabaticalString(5)
-			ausfList[k] = curAusf
-			prevAusf = curAusf
 		}
 
 		cases.upfs[types.NamespacedName{
 			Name: upfName,
 		}] = upfList
-		cases.ausfs[types.NamespacedName{
-			Name: ausfName,
-		}] = ausfList
 		cases.upfAckStreams[types.NamespacedName{
 			Name: upfName,
-		}] = make(chan string)
-		cases.ausfAckStreams[types.NamespacedName{
-			Name: ausfName,
 		}] = make(chan string)
 	}
 

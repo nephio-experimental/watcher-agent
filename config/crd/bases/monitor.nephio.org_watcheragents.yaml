@@ -56,13 +56,12 @@ spec:
                   properties:
                     group:
                       enum:
-                      - nfdeploy.nephio.org
+                      - workload.nephio.org
                       type: string
                     kind:
                       enum:
-                      - UpfDeploy
-                      - SmfDeploy
-                      - AusfDeploy
+                      - UPFDeployment
+                      - SMFDeployment
                       type: string
                     namespace:
                       description: Namespace to restrict the watch, defaults to empty
@@ -103,13 +102,12 @@ spec:
                       properties:
                         group:
                           enum:
-                          - nfdeploy.nephio.org
+                          - workload.nephio.org
                           type: string
                         kind:
                           enum:
-                          - UpfDeploy
-                          - SmfDeploy
-                          - AusfDeploy
+                          - UPFDeployment
+                          - SMFDeployment
                           type: string
                         namespace:
                           description: Namespace to restrict the watch, defaults to
