@@ -23,11 +23,11 @@ spec:
     addr: "localhost"
     port: "3000"
   watchRequests:
-    - group: nfdeploy.nephio.org
-      kind: UpfDeploy
+    - group: workload.nephio.org
+      kind: UPFDeployment
       namespace: nephio-system
       version: v1alpha1
-    - group: nfdeploy.nephio.org
-      kind: SmfDeploy
+    - group: workload.nephio.org
+      kind: SMFDeployment
       namespace: nephio-system
       version: v1alpha1

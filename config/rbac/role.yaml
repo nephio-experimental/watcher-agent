@@ -40,11 +40,10 @@ metadata:
   namespace: nephio-system
 rules:
 - apiGroups:
-  - nfdeploy.nephio.org
+  - workload.nephio.org
   resources:
-  - ausfdeploys
-  - smfdeploys
-  - upfdeploys
+  - smfdeployments
+  - upfdeployments
   verbs:
   - get
   - list

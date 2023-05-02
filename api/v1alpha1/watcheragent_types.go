@@ -28,11 +28,11 @@ type EdgeWatcher struct {
 
 // WatchRequest uniquely identifies a list of resources to watch
 type WatchRequest struct {
-	// +kubebuilder:validation:Enum=nfdeploy.nephio.org
+	// +kubebuilder:validation:Enum=workload.nephio.org
 	Group string `json:"group" yaml:"group"`
 	// +kubebuilder:validation:Enum=v1alpha1
 	Version string `json:"version" yaml:"version"`
-	// +kubebuilder:validation:Enum=UpfDeploy;SmfDeploy;AusfDeploy
+	// +kubebuilder:validation:Enum=UPFDeployment;SMFDeployment
 	Kind string `json:"kind" yaml:"kind"`
 	// Namespace to restrict the watch, defaults to empty string which corresponds
 	// to the "default" namespace

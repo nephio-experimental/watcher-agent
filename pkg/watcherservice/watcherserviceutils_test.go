@@ -164,9 +164,9 @@ func generateCases(n int) (cases []*clientCase, err error) {
 
 		params := &watcher.EventParameters{
 			WatchRequest: v1alpha1.WatchRequest{
-				Group:     "nfdeploy.nephio.org",
+				Group:     "workload.nephio.org",
 				Version:   "v1alpha1",
-				Kind:      "UpfDeploy",
+				Kind:      "UPFDeployment",
 				Namespace: fmt.Sprintf("upf-%d", i),
 			},
 			ClusterName: "cluster1",
@@ -186,7 +186,7 @@ func generateCases(n int) (cases []*clientCase, err error) {
 				Type: &params.Type,
 				Request: &pb.RequestMetadata{
 					Namespace: &params.Namespace,
-					Kind:      getPtr(pb.CRDKind_UPFDeploy),
+					Kind:      getPtr(pb.CRDKind_UPFDeployment),
 					Group:     getPtr(pb.APIGroup_NFDeployNephioOrg),
 					Version:   getPtr(pb.Version_v1alpha1),
 				},
@@ -198,8 +198,8 @@ func generateCases(n int) (cases []*clientCase, err error) {
 		}
 
 		if rand.Intn(2) == 0 {
-			params.WatchRequest.Kind = "SmfDeploy"
-			request.Metadata.Request.Kind = getPtr(pb.CRDKind_SMFDeploy)
+			params.WatchRequest.Kind = "SMFDeployment"
+			request.Metadata.Request.Kind = getPtr(pb.CRDKind_SMFDeployment)
 		}
 
 		cases = append(cases, &clientCase{

@@ -35,19 +35,17 @@ func generateRequestMetadata(watchReq v1alpha1.WatchRequest) (
 	}
 
 	switch watchReq.Kind {
-	case "UpfDeploy":
-		requestMetadata.Kind = getPtr(pb.CRDKind_UPFDeploy)
-	case "SmfDeploy":
-		requestMetadata.Kind = getPtr(pb.CRDKind_SMFDeploy)
-	case "AusfDeploy":
-		requestMetadata.Kind = getPtr(pb.CRDKind_AUSFDeploy)
+	case "UPFDeployment":
+		requestMetadata.Kind = getPtr(pb.CRDKind_UPFDeployment)
+	case "SMFDeployment":
+		requestMetadata.Kind = getPtr(pb.CRDKind_SMFDeployment)
 	default:
 		err := fmt.Errorf("invalid object kind: %v", watchReq.Kind)
 		return nil, err
 	}
 
 	switch watchReq.Group {
-	case "nfdeploy.nephio.org":
+	case "workload.nephio.org":
 		requestMetadata.Group = getPtr(pb.APIGroup_NFDeployNephioOrg)
 	default:
 		err := fmt.Errorf("invalid object group: %v", watchReq.Group)
