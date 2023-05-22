@@ -197,15 +197,20 @@ func generateCases(n int) (cases []*clientCase, err error) {
 			Object:         objectJSON,
 		}
 
-		if rand.Intn(2) == 0 {
+		randNum := rand.Intn(3)
+		if randNum == 0 {
 			params.WatchRequest.Kind = "SMFDeployment"
 			request.Metadata.Request.Kind = getPtr(pb.CRDKind_SMFDeployment)
+		} else if randNum == 1 {
+			params.WatchRequest.Kind = "AMFDeployment"
+			request.Metadata.Request.Kind = getPtr(pb.CRDKind_AMFDeployment)
 		}
 
 		cases = append(cases, &clientCase{
 			EventParameters: params,
 			EventRequest:    request,
 		})
+
 	}
 	return
 }

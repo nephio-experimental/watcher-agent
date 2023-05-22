@@ -42,6 +42,7 @@ rules:
 - apiGroups:
   - workload.nephio.org
   resources:
+  - amfdeployments
   - smfdeployments
   - upfdeployments
   verbs:

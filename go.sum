@@ -147,6 +147,8 @@ github.com/nephio-project/common-lib v0.0.0-20230315063433-f5a878b52e44 h1:ii1vh
 github.com/nephio-project/common-lib v0.0.0-20230315063433-f5a878b52e44/go.mod h1:PWElCVHYzWv/StAi7+GxRiP21EappWhRHGq3oOo3RIc=
 github.com/nephio-project/edge-watcher v0.0.0-20230501213922-6c3505259178 h1:IMmWPKTSrTUAaID2YNmmU8uc+XNhjrkCsz+zgEdwxg4=
 github.com/nephio-project/edge-watcher v0.0.0-20230501213922-6c3505259178/go.mod h1:v5N/V94U3x6t25ipi6Se3t4KyZjoMBBj5+FS6ARobas=
+github.com/nephio-project/edge-watcher v0.0.0-20230522222157-3d22d6b72ea4 h1:+OKPn0ejPmn9N1eWu9LZGGKNNxxNCG5YVoN+LqKjVGE=
+github.com/nephio-project/edge-watcher v0.0.0-20230522222157-3d22d6b72ea4/go.mod h1:v5N/V94U3x6t25ipi6Se3t4KyZjoMBBj5+FS6ARobas=
 github.com/nephio-project/nf-deploy-controller v0.0.0-20230315063215-56606ee32cec h1:riODMDr08jNp2yc+OUCv6gl39wult5xs+Ib0Le8ed6Y=
 github.com/nephio-project/nf-deploy-controller v0.0.0-20230315063215-56606ee32cec/go.mod h1:+VJILA2UHV3eR/Vg9t88fU5fEJNNcHWqbbScwaAMuq4=
 github.com/nokia/k8s-ipam v0.0.4-0.20230416191338-dcd944a8d636 h1:D2wTzwXxdXwEf5F6edQrUdSujPiHAcxA3vD7WL4MnmM=
