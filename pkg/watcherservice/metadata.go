@@ -39,6 +39,8 @@ func generateRequestMetadata(watchReq v1alpha1.WatchRequest) (
 		requestMetadata.Kind = getPtr(pb.CRDKind_UPFDeployment)
 	case "SMFDeployment":
 		requestMetadata.Kind = getPtr(pb.CRDKind_SMFDeployment)
+	case "AMFDeployment":
+		requestMetadata.Kind = getPtr(pb.CRDKind_AMFDeployment)
 	default:
 		err := fmt.Errorf("invalid object kind: %v", watchReq.Kind)
 		return nil, err

@@ -32,7 +32,7 @@ type WatchRequest struct {
 	Group string `json:"group" yaml:"group"`
 	// +kubebuilder:validation:Enum=v1alpha1
 	Version string `json:"version" yaml:"version"`
-	// +kubebuilder:validation:Enum=UPFDeployment;SMFDeployment
+	// +kubebuilder:validation:Enum=UPFDeployment;SMFDeployment;AMFDeployment
 	Kind string `json:"kind" yaml:"kind"`
 	// Namespace to restrict the watch, defaults to empty string which corresponds
 	// to the "default" namespace

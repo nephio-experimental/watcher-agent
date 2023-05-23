@@ -31,3 +31,7 @@ spec:
       kind: SMFDeployment
       namespace: nephio-system
       version: v1alpha1
+    - group: workload.nephio.org
+      kind: AMFDeployment
+      namespace: nephio-system
+      version: v1alpha1

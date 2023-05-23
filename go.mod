@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/nephio-project/api v0.0.0-20230427222620-ebcbeb2c21e3
 	github.com/nephio-project/common-lib v0.0.0-20230315063433-f5a878b52e44
-	github.com/nephio-project/edge-watcher v0.0.0-20230501213922-6c3505259178
+	github.com/nephio-project/edge-watcher v0.0.0-20230522222157-3d22d6b72ea4
 	github.com/nephio-project/nf-deploy-controller v0.0.0-20230315063215-56606ee32cec
 	github.com/onsi/ginkgo/v2 v2.9.1
 	github.com/onsi/gomega v1.27.4
