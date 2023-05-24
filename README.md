@@ -1,6 +1,9 @@
 # watcheragent
 Watcheragent runs on workload clusters, watches resources on the cluster based on requests, and reports back to a designated gRPC server on any resource status changes.
 
+**Note**: Please open issues in the [nephio](https://github.com/nephio-project/nephio)
+repository instead of here, and use the prefix "watcher-agent: " in the issue title.
+
 ## Description
 
 ![WatcherAgent in the system](./img/watcher-agent.jpeg)
